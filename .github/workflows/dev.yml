@@ -50,11 +50,9 @@ jobs:
       id: version
       run: |
         minecraft_version=$(./gradlew -q printMinecraftVersion)
-        echo "::set-output name=minecraft_version::$minecraft_version"
+        echo "minecraft_version=$minecraft_version" >> $GITHUB_OUTPUT
 
     - name: Cleanup Gradle Cache
-      # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
-      # Restoring these files from a GitHub Actions cache might cause problems for future builds.
       run: |
         rm -f ~/.gradle/caches/modules-2/modules-2.lock
         rm -f ~/.gradle/caches/modules-2/gc.properties
@@ -71,11 +69,14 @@ jobs:
         user_name: 'mastercoms'
         commit_message: Update Javadocs for Glowstone commit ${{ github.sha }}
 
-    - name: GitHub Artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
       with:
         name: glowstone
         path: build/libs/glowstone.jar
+        if-no-files-found: error
+        compression-level: 6
+        overwrite: true
 
     - name: Setup SSH
       if: ${{ github.ref == 'refs/heads/1.12' }}
